@@ -13,7 +13,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        /*stage('Build Docker Image') {
             steps {
                 bat "docker build -t ${IMAGE_NAME} ."
             }
@@ -28,7 +28,7 @@ pipeline {
                 """
             }
         }
-
+        */
         stage('Archive Test Reports') {
             steps {
                 junit 'test-results/**/*.xml'
