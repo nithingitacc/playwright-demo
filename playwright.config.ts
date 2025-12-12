@@ -89,7 +89,8 @@ export default defineConfig({
     trace: 'on',
   },
   reporter: [
-    ['junit', { outputFile: 'results.xml' }],
-    ['html']]
+  ['junit', { outputFile: 'results.xml' }],
+  ['html']
+],
     
 })
