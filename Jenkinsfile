@@ -7,28 +7,26 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
             }
         }
 
-        /*stage('Build Docker Image') {
+        stage('Install Dependencies') {
             steps {
-                bat "docker build -t ${IMAGE_NAME} ."
+                bat 'npm install'
+                bat 'npx playwright install'
             }
         }
 
-        stage('Run Tests in Docker') {
+        stage('Run Playwright Tests') {
             steps {
-                bat """
-                docker run --name ${CONTAINER_NAME} \
-                -v \$PWD/test-results:/app/test-results \
-                ${IMAGE_NAME}
-                """
+                bat 'npx playwright test --reporter=junit --output=test-results'
             }
         }
-        */
+
         stage('Archive Test Reports') {
             steps {
                 junit 'test-results/**/*.xml'
@@ -40,7 +38,24 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-            //bat "docker rm -f ${CONTAINER_NAME} || true"
         }
     }
 }
+//Docker Version (commented for future use)
+        /* 
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t ${IMAGE_NAME} ."
+            }
+        }
+
+        stage('Run Tests in Docker') {
+            steps {
+                bat """
+                docker run --name ${CONTAINER_NAME} ^
+                -v %CD%/test-results:/app/test-results ^
+                ${IMAGE_NAME}
+                """
+            }
+        }
+        */
