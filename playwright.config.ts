@@ -88,5 +88,8 @@ export default defineConfig({
     video: 'on',
     trace: 'on',
   },
-  reporter: [['html', { outputFolder: 'playwright-report' }]]
-});
+  reporter: [
+    ['junit', { outputFile: 'results.xml' }],
+    ['html']]
+    
+})

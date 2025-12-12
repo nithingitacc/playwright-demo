@@ -39,7 +39,8 @@ pipeline {
 
     post {
         always {
-            bat "docker rm -f ${CONTAINER_NAME} || true"
+            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
+            //bat "docker rm -f ${CONTAINER_NAME} || true"
         }
     }
 }
