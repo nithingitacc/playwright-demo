@@ -15,13 +15,13 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME} ."
+                bat "docker build -t ${IMAGE_NAME} ."
             }
         }
 
         stage('Run Tests in Docker') {
             steps {
-                sh """
+                bat """
                 docker run --name ${CONTAINER_NAME} \
                 -v \$PWD/test-results:/app/test-results \
                 ${IMAGE_NAME}
@@ -39,7 +39,7 @@ pipeline {
 
     post {
         always {
-            sh "docker rm -f ${CONTAINER_NAME} || true"
+            bat "docker rm -f ${CONTAINER_NAME} || true"
         }
     }
 }
