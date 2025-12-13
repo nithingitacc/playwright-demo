@@ -78,20 +78,17 @@
 //   // },
 // });
 
-
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
+  reporter: [
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['junit', { outputFile: 'test-results/results.xml' }]
+  ],
   use: {
     headless: true,
     screenshot: 'on',
-    video: 'on',
     trace: 'on',
-  },
-reporter: [
-  ['list'],
-  ['html', { open: 'never' }],
-  ['junit', { outputFile: 'test-results/results.xml' }]
-],
-    
-})
+    video: 'on'
+  }
+});
