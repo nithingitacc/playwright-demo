@@ -1,13 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME     = 'playwright-tests'
-        CONTAINER_NAME = 'pw-container'
-    }
-
     stages {
-
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -21,37 +15,42 @@ pipeline {
             }
         }
 
-        stage('Run Playwright Tests (Local)') {
+        stage('Run Playwright Tests') {
             steps {
                 bat 'npx playwright test'
             }
         }
 
-        stage('Archive Test Reports') {
+        stage('Publish Reports') {
             steps {
-                junit 'test-results/results.xml'
-                archiveArtifacts artifacts: 'test-results/**', fingerprint: true
+                // Publish Playwright HTML Report
+                publishHTML(target: [
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Playwright HTML Report',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
+                ])
+
+                // Publish JUnit results
+                junit 'test-results/**/*.xml'
             }
         }
 
         /*
-        ================================
-        🐳 DOCKER PIPELINE (DISABLED)
-        ================================
-
+        ===============================
+        DOCKER (ENABLE LATER)
+        ===============================
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t ${IMAGE_NAME} ."
+                bat 'docker build -t playwright-tests .'
             }
         }
 
         stage('Run Tests in Docker') {
             steps {
-                bat """
-                docker run --name ${CONTAINER_NAME} ^
-                -v %CD%\\test-results:/app/test-results ^
-                ${IMAGE_NAME}
-                """
+                bat 'docker run playwright-tests'
             }
         }
         */
@@ -60,11 +59,7 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-
-            /*
-            🔽 Enable only when Docker is active
-            bat "docker rm -f ${CONTAINER_NAME} || exit 0"
-            */
+            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
         }
     }
 }

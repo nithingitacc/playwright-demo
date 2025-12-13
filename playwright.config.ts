@@ -88,8 +88,9 @@ export default defineConfig({
     video: 'on',
     trace: 'on',
   },
-  reporter: [
+reporter: [
   ['list'],
+  ['html', { open: 'never' }],
   ['junit', { outputFile: 'test-results/results.xml' }]
 ],
     
