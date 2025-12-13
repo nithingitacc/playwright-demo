@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -20,46 +21,26 @@ pipeline {
                 bat 'npx playwright test'
             }
         }
-
-        stage('Publish Reports') {
-            steps {
-                // Publish Playwright HTML Report
-                publishHTML(target: [
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Playwright HTML Report',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: false
-                ])
-
-                // Publish JUnit results
-                junit 'test-results/**/*.xml'
-            }
-        }
-
-        /*
-        ===============================
-        DOCKER (ENABLE LATER)
-        ===============================
-        stage('Build Docker Image') {
-            steps {
-                bat 'docker build -t playwright-tests .'
-            }
-        }
-
-        stage('Run Tests in Docker') {
-            steps {
-                bat 'docker run playwright-tests'
-            }
-        }
-        */
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
-            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
+
+            // ✅ Publish JUnit results
+            junit 'test-results/results.xml'
+
+            // ✅ Publish Playwright HTML Report
+            publishHTML(target: [
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright HTML Report',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: false
+            ])
+
+            // ✅ Archive screenshots, videos, traces
+            archiveArtifacts artifacts: 'test-results/**, playwright-report/**', allowEmptyArchive: true
         }
     }
 }
