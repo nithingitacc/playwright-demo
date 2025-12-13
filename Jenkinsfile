@@ -21,7 +21,7 @@ pipeline {
         stage('Run Playwright Tests') {
             steps {
                 bat '''
-                npx playwright test --reporter=html
+                npx playwright test --reporter=html,junit
                 '''
             }
         }
