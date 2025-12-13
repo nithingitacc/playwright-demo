@@ -11,36 +11,31 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'npm install'
-                bat 'npx playwright install'
+                bat '''
+                npm install
+                npx playwright install
+                '''
             }
         }
 
         stage('Run Playwright Tests') {
             steps {
-                bat 'npx playwright test'
+                bat '''
+                npx playwright test
+                '''
             }
         }
-    }
 
-    post {
-        always {
+        stage('Publish Reports') {
+            steps {
 
-            // ✅ Publish JUnit results
-            junit 'test-results/results.xml'
+                // ✅ Publish JUnit XML (for test trend & pass/fail)
+                junit 'test-results/**/*.xml'
 
-            // ✅ Publish Playwright HTML Report
-            publishHTML(target: [
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright HTML Report',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: false
-            ])
-
-            // ✅ Archive screenshots, videos, traces
-            archiveArtifacts artifacts: 'test-results/**, playwright-report/**', allowEmptyArchive: true
-        }
-    }
-}
+                // ✅ Publish Playwright HTML report (FULL folder, not just index.html)
+                publishHTML(target: [
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Playwright HTML Report',
+                    keepAll: true,
+                    alwaysLinkToLastBu
