@@ -42,10 +42,10 @@ pipeline {
 
         stage('Playwright Report URL') {
             steps {
-                echo '=============================================='
+                echo '=================Enclosed Link to View Playwright Report============================='
                 echo '✅ Playwright HTML Report (Nginx Hosted):'
                 echo '👉 http://localhost/playwright-report/index.html'
-                echo '=============================================='
+                echo '=================Enclosed Link to View Playwright Report============================='
             }
         }
     }
