@@ -20,43 +20,38 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                // Allow pipeline to continue even if tests fail
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     bat 'npx playwright test'
                 }
             }
         }
 
-        stage('Publish Reports') {
+        stage('Publish JUnit Report') {
             steps {
-
-                // ✅ JUnit report (pass/fail, trends)
                 junit 'test-results/results.xml'
-
-                // ✅ Playwright HTML report (folder-based SPA)
-                publishHTML(target: [
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Playwright HTML Report',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: false
-                ])
             }
         }
 
         stage('Publish Report to Nginx') {
             steps {
                 bat '''
-                xcopy /E /I /Y playwright-report D:\\Devops\\nginx\\html\\playwright-report
+                xcopy /E /I /Y playwright-report C:\\nginx\\html\\playwright-report
                 '''
+            }
+        }
+
+        stage('Playwright Report URL') {
+            steps {
+                echo '=============================================='
+                echo '✅ Playwright HTML Report (Nginx Hosted):'
+                echo '👉 http://localhost/playwright-report/index.html'
+                echo '=============================================='
             }
         }
     }
 
     post {
         always {
-            // Preserve raw artifacts for audit/debugging
             archiveArtifacts artifacts: 'playwright-report/**/*, test-results/**/*',
                              allowEmptyArchive: true
         }
