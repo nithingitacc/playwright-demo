@@ -1,14 +1,9 @@
 pipeline {
     agent any
 
-    options {
-        timestamps()
-        disableConcurrentBuilds()
-    }
-
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
@@ -17,46 +12,40 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat '''
-                npm ci
-                npx playwright install --with-deps
+                npm install
+                npx playwright install
                 '''
             }
         }
 
-        stage('Run Playwright Tests') {
+        stage('Run Tests') {
             steps {
-                // Reporters are controlled ONLY via playwright.config.ts
-                bat '''
-                npx playwright test
-                '''
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    bat 'npx playwright test'
+                }
             }
         }
 
-        stage('Publish Test Results (JUnit)') {
+        stage('Publish Reports') {
             steps {
-                // Jenkins-native test reporting (safe & supported)
                 junit 'test-results/results.xml'
+
+                publishHTML(target: [
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'Playwright HTML Report',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
+                ])
             }
         }
     }
 
     post {
         always {
-            // Archive Playwright HTML report for download
-            archiveArtifacts artifacts: 'playwright-report/**/*',
+            archiveArtifacts artifacts: 'playwright-report/**/*, test-results/**/*',
                              allowEmptyArchive: true
-
-            // Optional: archive raw test artifacts
-            archiveArtifacts artifacts: 'test-results/**/*',
-                             allowEmptyArchive: true
-        }
-
-        failure {
-            echo '❌ Playwright tests failed. Check JUnit results and HTML report artifacts.'
-        }
-
-        success {
-            echo '✅ Playwright tests passed successfully.'
         }
     }
 }
