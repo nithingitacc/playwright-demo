@@ -42,6 +42,18 @@ pipeline {
         }
     }
 
+
+
+stage('Publish Report to Nginx') {
+    steps {
+        bat '''
+        xcopy /E /I /Y playwright-report C:\\nginx\\html\\playwright-report
+        '''
+    }
+}
+
+
+
     post {
         always {
             archiveArtifacts artifacts: 'playwright-report/**/*, test-results/**/*',
