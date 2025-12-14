@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -12,70 +17,46 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat '''
-                npm install
-                npx playwright install
+                npm ci
+                npx playwright install --with-deps
                 '''
             }
         }
 
         stage('Run Playwright Tests') {
             steps {
-                // ⚠️ DO NOT override reporters here
-                // Reporters are controlled via playwright.config.ts
+                // Reporters are controlled ONLY via playwright.config.ts
                 bat '''
                 npx playwright test
                 '''
             }
         }
 
-        stage('Publish Reports') {
+        stage('Publish Test Results (JUnit)') {
             steps {
-
-                // ✅ JUnit report (from playwright.config.ts)
+                // Jenkins-native test reporting (safe & supported)
                 junit 'test-results/results.xml'
-
-                // ✅ Playwright HTML report (FULL folder)
-                publishHTML(target: [
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    reportName: 'Playwright HTML Report',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: false
-                ])
             }
         }
-
-        /*
-        ===============================
-        DOCKER (Enable Later)
-        ===============================
-
-        stage('Build Docker Image') {
-            steps {
-                bat 'docker build -t playwright-tests .'
-            }
-        }
-
-        stage('Run Tests in Docker') {
-            steps {
-                bat '''
-                docker run --rm ^
-                -v %cd%\\playwright-report:/app/playwright-report ^
-                -v %cd%\\test-results:/app/test-results ^
-                playwright-tests
-                '''
-            }
-        }
-        */
-
     }
 
     post {
         always {
-            // Optional: keep raw files for debugging
-            archiveArtifacts artifacts: 'playwright-report/**/*, test-results/**/*',
+            // Archive Playwright HTML report for download
+            archiveArtifacts artifacts: 'playwright-report/**/*',
                              allowEmptyArchive: true
+
+            // Optional: archive raw test artifacts
+            archiveArtifacts artifacts: 'test-results/**/*',
+                             allowEmptyArchive: true
+        }
+
+        failure {
+            echo '❌ Playwright tests failed. Check JUnit results and HTML report artifacts.'
+        }
+
+        success {
+            echo '✅ Playwright tests passed successfully.'
         }
     }
 }
