@@ -1,13 +1,10 @@
-FROM mcr.microsoft.com/playwright:v1.45.0-jammy
+FROM mcr.microsoft.com/playwright:v1.44.0-jammy
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package*.json ./
+RUN npm install
 
 COPY . .
-
-# Install Playwright browsers
-RUN npx playwright install --with-deps
 
 CMD ["npx", "playwright", "test"]
