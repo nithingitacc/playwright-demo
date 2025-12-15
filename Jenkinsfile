@@ -19,7 +19,7 @@ pipeline {
         OPTION A: Run Playwright DIRECTLY on Jenkins node
         ======================================================
         */
-
+/*
         stage('Install Dependencies') {
             steps {
                 bat '''
@@ -37,7 +37,7 @@ pipeline {
             }
         }
 
-        /*
+*/        
         ======================================================
         OPTION B: Run Playwright INSIDE DOCKER (Enable later)
         ======================================================
@@ -62,7 +62,7 @@ pipeline {
                 }
             }
         }
-        */
+        /**/
 
         stage('Publish JUnit Report') {
             steps {
