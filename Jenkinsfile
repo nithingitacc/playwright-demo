@@ -37,11 +37,11 @@ pipeline {
             }
         }
 
-*/        
+*/       /* 
         ======================================================
         OPTION B: Run Playwright INSIDE DOCKER (Enable later)
         ======================================================
-
+        */
         stage('Docker Build Image') {
             steps {
                 bat '''
