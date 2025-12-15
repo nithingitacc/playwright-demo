@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = 'playwright-tests'
+        DOCKER_CONTAINER = 'playwright-container'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -8,6 +13,12 @@ pipeline {
                 checkout scm
             }
         }
+
+        /*
+        ======================================================
+        OPTION A: Run Playwright DIRECTLY on Jenkins node
+        ======================================================
+        */
 
         stage('Install Dependencies') {
             steps {
@@ -26,6 +37,33 @@ pipeline {
             }
         }
 
+        /*
+        ======================================================
+        OPTION B: Run Playwright INSIDE DOCKER (Enable later)
+        ======================================================
+
+        stage('Docker Build Image') {
+            steps {
+                bat '''
+                docker build -t %DOCKER_IMAGE% .
+                '''
+            }
+        }
+
+        stage('Run Tests in Docker') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    bat '''
+                    docker run --rm ^
+                      -v "%cd%\\playwright-report:/app/playwright-report" ^
+                      -v "%cd%\\test-results:/app/test-results" ^
+                      %DOCKER_IMAGE%
+                    '''
+                }
+            }
+        }
+        */
+
         stage('Publish JUnit Report') {
             steps {
                 junit 'test-results/results.xml'
@@ -42,10 +80,9 @@ pipeline {
 
         stage('Playwright Report URL') {
             steps {
-                echo '=================Enclosed Link to View Playwright Report============================='
-                echo '✅ Playwright HTML Report (Nginx Hosted):'
+                echo '================= Playwright HTML Report ================='
                 echo '👉 http://localhost/playwright-report/index.html'
-                echo '=================Enclosed Link to View Playwright Report============================='
+                echo '=========================================================='
             }
         }
     }
